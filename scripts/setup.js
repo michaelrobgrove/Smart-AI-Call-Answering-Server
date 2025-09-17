@@ -32,7 +32,7 @@ async function setupDatabase() {
     console.log("👤 Creating default admin user...")
     const hashedPassword = await bcrypt.hash("admin123", 10)
     const insertAdmin = db.prepare(`
-      INSERT OR REPLACE INTO admins (username, email, password_hash, created_at)
+      INSERT OR REPLACE INTO admin_users (username, email, password_hash, created_at)
       VALUES (?, ?, ?, datetime('now'))
     `)
 

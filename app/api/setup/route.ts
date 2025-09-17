@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
         .replace(/\{BUSINESS_HOURS\}/g, setupData.businessHours)
         .replace(/\{CONTACT_PHONE\}/g, setupData.contactPhone)
         .replace(/\{CONTACT_EMAIL\}/g, setupData.contactEmail),
+      provider: setupData.aiProvider,
       model: setupData.aiModel,
       maxTokens: setupData.maxTokens,
       temperature: setupData.temperature,
@@ -78,8 +79,9 @@ JWT_SECRET=${process.env.JWT_SECRET || generateRandomString(64)}
 TELNYX_API_KEY=${setupData.telnyxApiKey}
 TELNYX_WEBHOOK_SECRET=${setupData.telnyxWebhookSecret || ""}
 
-# OpenAI Configuration
-OPENAI_API_KEY=${setupData.openaiApiKey}
+# AI Configuration
+${setupData.aiProvider === "gemini" ? "GEMINI_API_KEY" : "OPENAI_API_KEY"}=${setupData.geminiApiKey || setupData.openaiApiKey}
+AI_PROVIDER=${setupData.aiProvider}
 
 # Server Configuration
 PORT=${process.env.PORT || 3000}

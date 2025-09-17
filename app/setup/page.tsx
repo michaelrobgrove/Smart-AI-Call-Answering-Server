@@ -28,13 +28,14 @@ interface SetupData {
   // AI Configuration
   systemPrompt: string
   aiModel: string
+  aiProvider: string
   maxTokens: number
   temperature: number
 
   // API Keys
   telnyxApiKey: string
   telnyxWebhookSecret: string
-  openaiApiKey: string
+  geminiApiKey: string
 
   // Features
   enableSpamDetection: boolean
@@ -83,14 +84,15 @@ Company Information:
 - Description: {COMPANY_DESCRIPTION}
 - Business Hours: {BUSINESS_HOURS}
 - Contact: {CONTACT_PHONE} / {CONTACT_EMAIL}`,
-    aiModel: "gpt-4",
+    aiModel: "gemini-1.5-pro",
+    aiProvider: "gemini",
     maxTokens: 500,
     temperature: 0.7,
 
     // API Keys
     telnyxApiKey: "",
     telnyxWebhookSecret: "",
-    openaiApiKey: "",
+    geminiApiKey: "",
 
     // Features
     enableSpamDetection: true,
@@ -148,7 +150,7 @@ Company Information:
       case 2: // AI
         return !!(setupData.systemPrompt && setupData.aiModel)
       case 3: // Integrations
-        return !!(setupData.telnyxApiKey && setupData.openaiApiKey)
+        return !!(setupData.telnyxApiKey && setupData.geminiApiKey)
       case 4: // Features
         return true // All optional
       case 5: // Review
@@ -387,7 +389,26 @@ Company Information:
                       automatically.
                     </p>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <Label htmlFor="aiProvider">AI Provider</Label>
+                      <select
+                        id="aiProvider"
+                        value={setupData.aiProvider}
+                        onChange={(e) => {
+                          handleInputChange("aiProvider", e.target.value)
+                          if (e.target.value === "gemini") {
+                            handleInputChange("aiModel", "gemini-1.5-pro")
+                          } else if (e.target.value === "openai") {
+                            handleInputChange("aiModel", "gpt-4")
+                          }
+                        }}
+                        className="w-full p-2 border rounded-md"
+                      >
+                        <option value="gemini">Google Gemini (Recommended)</option>
+                        <option value="openai">OpenAI GPT</option>
+                      </select>
+                    </div>
                     <div>
                       <Label htmlFor="aiModel">AI Model</Label>
                       <select
@@ -396,9 +417,19 @@ Company Information:
                         onChange={(e) => handleInputChange("aiModel", e.target.value)}
                         className="w-full p-2 border rounded-md"
                       >
-                        <option value="gpt-4">GPT-4 (Recommended)</option>
-                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                        {setupData.aiProvider === "gemini" ? (
+                          <>
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro (Recommended)</option>
+                            <option value="gemini-1.5-flash">Gemini 1.5 Flash (Faster)</option>
+                            <option value="gemini-1.0-pro">Gemini 1.0 Pro</option>
+                          </>
+                        ) : (
+                          <>
+                            <option value="gpt-4">GPT-4</option>
+                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                            <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                          </>
+                        )}
                       </select>
                     </div>
                     <div>
@@ -464,16 +495,20 @@ Company Information:
                   </div>
 
                   <div>
-                    <Label htmlFor="openaiApiKey">OpenAI API Key *</Label>
+                    <Label htmlFor="geminiApiKey">
+                      {setupData.aiProvider === "gemini" ? "Google Gemini API Key" : "OpenAI API Key"} *
+                    </Label>
                     <Input
-                      id="openaiApiKey"
+                      id="geminiApiKey"
                       type="password"
-                      value={setupData.openaiApiKey}
-                      onChange={(e) => handleInputChange("openaiApiKey", e.target.value)}
-                      placeholder="sk-..."
+                      value={setupData.geminiApiKey}
+                      onChange={(e) => handleInputChange("geminiApiKey", e.target.value)}
+                      placeholder={setupData.aiProvider === "gemini" ? "AIza..." : "sk-..."}
                     />
                     <p className="text-sm text-muted-foreground mt-1">
-                      Get this from your OpenAI dashboard under API Keys
+                      {setupData.aiProvider === "gemini"
+                        ? "Get this from Google AI Studio (makersuite.google.com/app/apikey)"
+                        : "Get this from your OpenAI dashboard under API Keys"}
                     </p>
                   </div>
                 </div>
@@ -599,7 +634,8 @@ Company Information:
                         {setupData.telnyxWebhookSecret ? "✓ Configured" : "Not set"}
                       </div>
                       <div>
-                        <strong>OpenAI API Key:</strong> {setupData.openaiApiKey ? "✓ Configured" : "❌ Missing"}
+                        <strong>{setupData.aiProvider === "gemini" ? "Gemini API Key" : "OpenAI API Key"}:</strong>{" "}
+                        {setupData.geminiApiKey ? "✓ Configured" : "❌ Missing"}
                       </div>
                     </TabsContent>
 
