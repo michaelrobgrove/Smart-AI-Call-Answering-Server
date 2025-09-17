@@ -62,8 +62,8 @@ Get up and running in under 5 minutes:
 
 \`\`\`bash
 # Clone the repository
-git clone https://github.com/your-org/ai-phone-agent.git
-cd ai-phone-agent
+git clone https://github.com/michaelrobgrove/v0-autonomous-ai-phone-agent.git
+cd v0-autonomous-ai-phone-agent
 
 # Start with Docker Compose
 docker-compose up -d
@@ -74,6 +74,10 @@ docker-compose up -d
 ### 🛠️ **Option 2: Manual Installation**
 
 \`\`\`bash
+# Clone the repository
+git clone https://github.com/michaelrobgrove/v0-autonomous-ai-phone-agent.git
+cd v0-autonomous-ai-phone-agent
+
 # Install dependencies
 npm install
 
@@ -312,7 +316,7 @@ npm run dev
 2. **Application Logs** - `docker logs ai-phone-agent -f`
 3. **AI Agent Tester** - Debug conversation flows
 4. **Webhook Validator** - Test Telnyx integration
-5. **Community Forum** - [GitHub Discussions](https://github.com/your-org/ai-phone-agent/discussions)
+5. **Community Forum** - [GitHub Discussions](https://github.com/michaelrobgrove/v0-autonomous-ai-phone-agent/discussions)
 
 ## 🚀 Advanced Configuration
 
@@ -375,8 +379,8 @@ We welcome contributions! Here's how to get started:
 
 \`\`\`bash
 # Fork and clone the repository
-git clone https://github.com/your-username/ai-phone-agent.git
-cd ai-phone-agent
+git clone https://github.com/michaelrobgrove/v0-autonomous-ai-phone-agent.git
+cd v0-autonomous-ai-phone-agent
 
 # Install dependencies
 npm install
@@ -406,7 +410,7 @@ This project is proprietary software. All rights reserved.
 
 **Ready to revolutionize your business phone system?**
 
-[🚀 Get Started Now](#-quick-start) • [📖 Read the Docs](#-api-documentation) • [💬 Join Community](https://github.com/your-org/ai-phone-agent/discussions)
+[🚀 Get Started Now](#-quick-start) • [📖 Read the Docs](#-api-documentation) • [💬 Join Community](https://github.com/michaelrobgrove/v0-autonomous-ai-phone-agent/discussions)
 
 *Built with ❤️ for small businesses who deserve enterprise-grade phone systems*
 
