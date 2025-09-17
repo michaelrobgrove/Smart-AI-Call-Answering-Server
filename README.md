@@ -1,244 +1,77 @@
-# AI Phone Agent System
+<div align="center">
 
-A fully autonomous conversational AI agent for handling phone calls for small businesses, built with Next.js, Telnyx, and OpenAI.
+# 🤖 AI Phone Agent System
 
-## Features
+**The Ultimate Autonomous Conversational AI for Small Business Phone Management**
 
-- **Autonomous AI Agent**: Powered by OpenAI GPT-4 for natural conversations
-- **Lead Qualification**: Automatically extracts caller information and qualifies leads
-- **Spam Detection**: Intelligent filtering of spam and robocalls
-- **Call Management**: Complete call logging, transcription, and history
-- **Admin Dashboard**: Professional interface for managing calls and system settings
-- **Knowledge Base**: Customizable Q&A system for common inquiries
-- **Real-time Notifications**: Live updates for incoming calls and system events
-- **Telnyx Integration**: Full telephony integration with call control
-- **Business Hours**: Automatic after-hours handling and voicemail routing
-- **Web-based Setup**: Easy configuration wizard for first-time setup
+*Transform your business phone system with intelligent AI that never sleeps, never misses a call, and always delivers professional customer service.*
 
-## Quick Start
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![Telnyx](https://img.shields.io/badge/Telnyx-API-green?style=for-the-badge)](https://telnyx.com/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-orange?style=for-the-badge&logo=openai)](https://openai.com/)
 
-### Prerequisites
+[🚀 Quick Start](#-quick-start) • [✨ Features](#-features) • [📖 Documentation](#-api-documentation) • [🛠️ Deployment](#-deployment-options)
 
-- Node.js 18+
-- Telnyx account with Call Control API access
-- OpenAI API key
+</div>
 
-### Installation & Setup
+---
 
-1. **Clone and install dependencies:**
-   \`\`\`bash
-   git clone <repository-url>
-   cd ai-phone-agent
-   npm install
-   \`\`\`
+## 🎯 What Makes This Special?
 
-2. **Start the application:**
-   \`\`\`bash
-   npm run dev
-   \`\`\`
+This isn't just another chatbot. It's a **complete business phone system** powered by cutting-edge AI that:
 
-3. **Complete web-based setup:**
-   - Visit http://localhost:3000
-   - You'll be automatically redirected to the setup wizard
-   - Follow the step-by-step configuration process:
-     - Create admin account
-     - Configure company information
-     - Set up AI behavior and prompts
-     - Enter API keys (Telnyx, OpenAI)
-     - Enable desired features
+- **Handles calls like a human** - Natural conversations that feel authentic
+- **Qualifies leads automatically** - Extracts contact info and business needs
+- **Never misses opportunities** - 24/7 availability with intelligent routing
+- **Learns your business** - Customizable knowledge base and responses
+- **Protects from spam** - Advanced filtering and call screening
+- **Scales effortlessly** - From startup to enterprise, handles any volume
 
-4. **Configure Telnyx webhook:**
-   - In your Telnyx portal, set webhook URL to: `https://your-domain.com/api/webhooks/telnyx`
-   - Enable events: `call.initiated`, `call.answered`, `call.hangup`, `call.transcription`, `call.speak.ended`, `call.recording.saved`
+## ✨ Features That Drive Results
 
-## Deployment Options
+### 🧠 **Intelligent AI Agent**
+- **GPT-4 Powered Conversations** - Natural, context-aware interactions
+- **Lead Qualification Engine** - Automatically captures and scores prospects
+- **Smart Call Routing** - Handles inquiries, appointments, and transfers
+- **Multilingual Support** - Communicate in your customers' preferred language
 
-### Option 1: Docker (Recommended)
+### 📊 **Professional Dashboard**
+- **Real-time Call Monitoring** - Live call status and agent performance
+- **Comprehensive Analytics** - Call metrics, conversion rates, and insights
+- **Contact Management** - Organized lead database with interaction history
+- **Knowledge Base Editor** - Easy-to-use Q&A management system
+
+### 🔧 **Enterprise-Grade Features**
+- **Business Hours Management** - Automatic after-hours and holiday handling
+- **Call Recording & Transcription** - Full conversation logs for compliance
+- **Webhook Integrations** - Connect to CRM, email marketing, and more
+- **Advanced Spam Protection** - AI-powered robocall detection and blocking
+
+### 🚀 **Developer-Friendly**
+- **One-Click Setup Wizard** - No technical expertise required
+- **Docker Support** - Deploy anywhere in minutes
+- **RESTful API** - Integrate with existing business systems
+- **Real-time Notifications** - SSE-powered live updates
+
+## 🚀 Quick Start
+
+### ⚡ **Option 1: Docker (Recommended)**
+
+Get up and running in under 5 minutes:
 
 \`\`\`bash
-# Build and run with Docker Compose
+# Clone the repository
+git clone https://github.com/your-org/ai-phone-agent.git
+cd ai-phone-agent
+
+# Start with Docker Compose
 docker-compose up -d
 
-# Or build manually
-docker build -t ai-phone-agent .
-docker run -p 3000:3000 -v ./data:/app/data ai-phone-agent
+# Visit http://localhost:3000 and follow the setup wizard!
 \`\`\`
 
-### Option 2: Direct Deployment
-
-\`\`\`bash
-# Build for production
-npm run build
-
-# Start production server
-npm start
-\`\`\`
-
-### Option 3: Systemd Service (Linux)
-
-1. **Create service file:**
-   \`\`\`bash
-   sudo nano /etc/systemd/system/ai-phone-agent.service
-   \`\`\`
-
-2. **Add service configuration:**
-   \`\`\`ini
-   [Unit]
-   Description=AI Phone Agent
-   After=network.target
-
-   [Service]
-   Type=simple
-   User=www-data
-   WorkingDirectory=/path/to/ai-phone-agent
-   ExecStart=/usr/bin/node server.js
-   Restart=always
-   RestartSec=10
-   Environment=NODE_ENV=production
-
-   [Install]
-   WantedBy=multi-user.target
-   \`\`\`
-
-3. **Enable and start service:**
-   \`\`\`bash
-   sudo systemctl daemon-reload
-   sudo systemctl enable ai-phone-agent
-   sudo systemctl start ai-phone-agent
-   \`\`\`
-
-## System Architecture
-
-### Core Components
-
-- **AI Agent Engine** (`lib/ai-agent.ts`): Conversation management and lead qualification
-- **Call Session Manager** (`lib/call-session-manager.ts`): Coordinates between AI and telephony
-- **Telnyx Client** (`lib/telnyx-client.ts`): Telephony service integration
-- **Notification System** (`lib/notification-manager.ts`): Real-time alerts and updates
-- **Database Layer** (`lib/database.ts`): SQLite-based data persistence
-- **Setup System** (`app/setup/`): Web-based configuration wizard
-
-### Admin Dashboard
-
-- **Authentication**: Secure JWT-based login system
-- **Call Logs**: Complete call history with transcripts and contact grouping
-- **Knowledge Base**: Manage AI responses and business information
-- **System Settings**: Configure business hours, AI prompts, and telephony settings
-- **Real-time Monitoring**: Live call status and system health indicators
-- **AI Agent Tester**: Test and debug AI responses
-
-## Configuration
-
-### Web-based Setup Wizard
-
-The system includes a comprehensive setup wizard that configures:
-
-1. **Admin Account**: Create your administrator credentials
-2. **Company Information**: Business details, contact info, and hours
-3. **AI Configuration**: System prompts, model selection, and behavior settings
-4. **API Keys**: Secure storage of Telnyx and OpenAI credentials
-5. **Features**: Enable/disable optional features like spam detection, call recording, etc.
-
-### Manual Configuration (Advanced)
-
-If you need to manually configure the system, create a `.env` file:
-
-\`\`\`env
-# Authentication
-JWT_SECRET=your-super-secret-jwt-key
-
-# Telnyx Configuration
-TELNYX_API_KEY=your-telnyx-api-key
-TELNYX_WEBHOOK_SECRET=your-webhook-secret
-
-# OpenAI Configuration
-OPENAI_API_KEY=your-openai-api-key
-
-# Server Configuration
-PORT=3000
-NODE_ENV=production
-
-# Database
-DATABASE_PATH=./data/database.db
-
-# Setup Status
-SETUP_COMPLETED=true
-\`\`\`
-
-## API Endpoints
-
-### Setup
-- `GET /api/setup/status` - Check setup completion status
-- `POST /api/setup` - Complete initial system setup
-
-### Authentication
-- `POST /api/auth/login` - Admin login
-- `POST /api/auth/logout` - Admin logout
-- `GET /api/auth/me` - Get current user
-
-### Call Management
-- `GET /api/calls` - List call logs
-- `GET /api/calls/[id]` - Get call details
-- `POST /api/calls` - Create call log entry
-
-### Knowledge Base
-- `GET /api/knowledge` - List knowledge entries
-- `POST /api/knowledge` - Create knowledge entry
-- `PUT /api/knowledge/[id]` - Update knowledge entry
-- `DELETE /api/knowledge/[id]` - Delete knowledge entry
-
-### AI Testing
-- `POST /api/ai/test` - Test AI agent responses
-
-### System Status
-- `GET /api/telnyx/status` - Check Telnyx integration status
-- `POST /api/telnyx/test-call` - Create test call
-
-### Notifications
-- `GET /api/notifications` - Get notifications
-- `GET /api/notifications/stream` - SSE notification stream
-
-### Webhooks
-- `POST /api/webhooks/telnyx` - Telnyx webhook handler
-
-## Security Features
-
-- **JWT Authentication**: Secure admin access
-- **Webhook Validation**: Cryptographic signature verification
-- **Input Sanitization**: Protection against injection attacks
-- **Secure Setup Process**: Encrypted storage of sensitive configuration
-- **Environment Variable Protection**: API keys stored securely
-- **HTTPS Enforcement**: SSL/TLS encryption for all communications
-
-## Monitoring and Logging
-
-- **System Health**: Real-time status monitoring
-- **Call Analytics**: Detailed call metrics and reporting
-- **Error Tracking**: Comprehensive error logging and alerts
-- **Performance Metrics**: Response times and system performance
-- **Setup Validation**: Automatic configuration verification
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Setup not completing**: Check browser console for errors and ensure all required fields are filled
-2. **Telnyx webhook not working**: Verify webhook URL is accessible and HTTPS is enabled
-3. **AI not responding**: Check OpenAI API key and ensure sufficient credits
-4. **Database errors**: Ensure write permissions to the data directory
-
-### Support
-
-For technical support:
-1. Check the admin dashboard system status
-2. Review application logs: `docker logs ai-phone-agent` or `journalctl -u ai-phone-agent -f`
-3. Verify Telnyx webhook configuration in the Telephony Status page
-4. Use the AI Agent Tester to debug conversation issues
-5. Ensure all environment variables are set correctly
-
-## Development
-
-### Local Development
+### 🛠️ **Option 2: Manual Installation**
 
 \`\`\`bash
 # Install dependencies
@@ -247,25 +80,334 @@ npm install
 # Start development server
 npm run dev
 
-# Run database setup (if needed)
-npm run setup
+# Complete setup at http://localhost:3000
 \`\`\`
 
-### Project Structure
+### 📋 **Prerequisites**
 
-\`\`\`
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   ├── setup/             # Setup wizard
-│   └── dashboard/         # Admin dashboard pages
-├── components/            # React components
-├── hooks/                 # Custom React hooks
-├── lib/                   # Core business logic
-├── scripts/               # Database and deployment scripts
-├── data/                  # SQLite database storage
-└── public/                # Static assets
+- **Node.js 18+** - [Download here](https://nodejs.org/)
+- **Telnyx Account** - [Sign up for free](https://telnyx.com/) (Call Control API access)
+- **OpenAI API Key** - [Get your key](https://platform.openai.com/api-keys)
+
+## 🎨 Setup Wizard Experience
+
+Our **intelligent setup wizard** makes configuration effortless:
+
+### Step 1: 👤 **Create Your Admin Account**
+- Secure administrator credentials
+- Password recovery email setup
+- Multi-factor authentication options
+
+### Step 2: 🏢 **Configure Your Business**
+- Company information and branding
+- Business hours and timezone
+- Contact details and addresses
+
+### Step 3: 🤖 **Customize Your AI Agent**
+- Personality and conversation style
+- Industry-specific knowledge base
+- Lead qualification criteria
+- Custom response templates
+
+### Step 4: 🔑 **Connect Your Services**
+- Telnyx telephony integration
+- OpenAI API configuration
+- Optional third-party integrations
+
+### Step 5: ✅ **Launch & Test**
+- Automated system validation
+- Test call functionality
+- Webhook configuration verification
+
+## 🏗️ System Architecture
+
+\`\`\`mermaid
+graph TB
+    A[Incoming Call] --> B[Telnyx API]
+    B --> C[AI Phone Agent]
+    C --> D[OpenAI GPT-4]
+    C --> E[Knowledge Base]
+    C --> F[Lead Qualification]
+    F --> G[Admin Dashboard]
+    G --> H[Real-time Notifications]
+    C --> I[Call Logging]
+    I --> J[SQLite Database]
 \`\`\`
 
-## License
+### 🔧 **Core Components**
+
+| Component | Purpose | Technology |
+|-----------|---------|------------|
+| **AI Agent Engine** | Conversation management & lead qualification | OpenAI GPT-4, Custom prompts |
+| **Call Session Manager** | Coordinates AI and telephony systems | Node.js, WebSocket |
+| **Telnyx Integration** | Voice communication and call control | Telnyx Call Control API |
+| **Admin Dashboard** | Management interface and analytics | Next.js, React, TypeScript |
+| **Notification System** | Real-time alerts and updates | Server-Sent Events (SSE) |
+| **Database Layer** | Data persistence and analytics | SQLite with migrations |
+
+## 🛠️ Deployment Options
+
+### 🐳 **Production Docker Deployment**
+
+\`\`\`bash
+# Production-ready deployment
+docker build -t ai-phone-agent:latest .
+docker run -d \
+  --name ai-phone-agent \
+  -p 3000:3000 \
+  -v ./data:/app/data \
+  --restart unless-stopped \
+  ai-phone-agent:latest
+\`\`\`
+
+### ☁️ **Cloud Deployment**
+
+#### **Vercel (Recommended for Next.js)**
+\`\`\`bash
+# Deploy to Vercel
+npm install -g vercel
+vercel --prod
+\`\`\`
+
+#### **Railway**
+\`\`\`bash
+# One-click deploy to Railway
+railway login
+railway deploy
+\`\`\`
+
+#### **DigitalOcean App Platform**
+- Connect your GitHub repository
+- Set environment variables
+- Deploy with automatic scaling
+
+### 🖥️ **Self-Hosted Linux Server**
+
+\`\`\`bash
+# Create systemd service
+sudo nano /etc/systemd/system/ai-phone-agent.service
+
+# Service configuration
+[Unit]
+Description=AI Phone Agent System
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/ai-phone-agent
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+
+# Enable and start
+sudo systemctl daemon-reload
+sudo systemctl enable ai-phone-agent
+sudo systemctl start ai-phone-agent
+\`\`\`
+
+## 📖 API Documentation
+
+### 🔐 **Authentication Endpoints**
+\`\`\`typescript
+POST /api/auth/login      // Admin login
+POST /api/auth/logout     // Admin logout  
+GET  /api/auth/me         // Current user info
+\`\`\`
+
+### 📞 **Call Management**
+\`\`\`typescript
+GET    /api/calls         // List all calls with filters
+GET    /api/calls/[id]    // Detailed call information
+POST   /api/calls         // Create new call log
+PUT    /api/calls/[id]    // Update call details
+DELETE /api/calls/[id]    // Archive call record
+\`\`\`
+
+### 🧠 **Knowledge Base**
+\`\`\`typescript
+GET    /api/knowledge     // List Q&A entries
+POST   /api/knowledge     // Create new entry
+PUT    /api/knowledge/[id] // Update existing entry
+DELETE /api/knowledge/[id] // Remove entry
+\`\`\`
+
+### 🤖 **AI Agent Testing**
+\`\`\`typescript
+POST /api/ai/test         // Test AI responses
+POST /api/ai/chat         // Direct AI conversation
+\`\`\`
+
+### 📊 **System Monitoring**
+\`\`\`typescript
+GET /api/telnyx/status    // Telephony system health
+GET /api/notifications    // System notifications
+GET /api/notifications/stream // Real-time SSE stream
+\`\`\`
+
+## 🔒 Security & Compliance
+
+### 🛡️ **Security Features**
+- **JWT Authentication** with secure token rotation
+- **Webhook Signature Verification** for Telnyx integration
+- **Input Sanitization** preventing injection attacks
+- **Encrypted Configuration Storage** for sensitive data
+- **HTTPS Enforcement** for all communications
+- **Rate Limiting** to prevent abuse
+
+### 📋 **Compliance Ready**
+- **Call Recording Compliance** with consent management
+- **Data Retention Policies** configurable retention periods
+- **GDPR Support** with data export and deletion
+- **HIPAA Considerations** for healthcare applications
+- **Audit Logging** comprehensive activity tracking
+
+## 📊 Monitoring & Analytics
+
+### 📈 **Built-in Analytics**
+- **Call Volume Metrics** - Daily, weekly, monthly trends
+- **Lead Conversion Rates** - Track qualification success
+- **Response Time Analysis** - AI performance monitoring
+- **Customer Satisfaction** - Call quality scoring
+- **System Health Dashboards** - Uptime and performance
+
+### 🚨 **Alert System**
+- **Failed Call Notifications** - Immediate error alerts
+- **High Volume Warnings** - Capacity planning alerts
+- **Integration Status** - Service connectivity monitoring
+- **Performance Degradation** - Proactive issue detection
+
+## 🔧 Troubleshooting Guide
+
+### ❓ **Common Issues & Solutions**
+
+| Issue | Symptoms | Solution |
+|-------|----------|----------|
+| **Setup Won't Complete** | Wizard hangs or errors | Check browser console, verify all fields filled |
+| **Calls Not Connecting** | No incoming calls received | Verify Telnyx webhook URL and HTTPS certificate |
+| **AI Not Responding** | Silent calls or errors | Check OpenAI API key and account credits |
+| **Database Errors** | Setup or logging failures | Ensure write permissions to `/data` directory |
+| **Webhook Failures** | Telnyx events not processing | Verify webhook secret and endpoint accessibility |
+
+### 🔍 **Debug Mode**
+
+Enable detailed logging for troubleshooting:
+
+\`\`\`bash
+# Set debug environment
+export DEBUG=ai-phone-agent:*
+export LOG_LEVEL=debug
+
+# Start with verbose logging
+npm run dev
+\`\`\`
+
+### 📞 **Support Channels**
+
+1. **System Status Dashboard** - Check real-time system health
+2. **Application Logs** - `docker logs ai-phone-agent -f`
+3. **AI Agent Tester** - Debug conversation flows
+4. **Webhook Validator** - Test Telnyx integration
+5. **Community Forum** - [GitHub Discussions](https://github.com/your-org/ai-phone-agent/discussions)
+
+## 🚀 Advanced Configuration
+
+### 🎛️ **Environment Variables**
+
+\`\`\`bash
+# Core Configuration
+JWT_SECRET=your-super-secure-jwt-secret
+NODE_ENV=production
+PORT=3000
+
+# Telnyx Integration
+TELNYX_API_KEY=your-telnyx-api-key
+TELNYX_WEBHOOK_SECRET=your-webhook-secret
+
+# OpenAI Configuration  
+OPENAI_API_KEY=your-openai-api-key
+OPENAI_MODEL=gpt-4-turbo-preview
+
+# Database
+DATABASE_PATH=./data/database.db
+DATABASE_BACKUP_ENABLED=true
+
+# Features
+CALL_RECORDING_ENABLED=true
+SPAM_DETECTION_ENABLED=true
+ANALYTICS_ENABLED=true
+
+# Setup Status
+SETUP_COMPLETED=false
+\`\`\`
+
+### 🔧 **Custom Integrations**
+
+Extend functionality with webhooks:
+
+\`\`\`typescript
+// Custom webhook handler
+app.post('/api/webhooks/custom', async (req, res) => {
+  const { event, data } = req.body;
+  
+  switch (event) {
+    case 'call.qualified':
+      await sendToCRM(data.lead);
+      break;
+    case 'call.completed':
+      await updateAnalytics(data.metrics);
+      break;
+  }
+  
+  res.json({ success: true });
+});
+\`\`\`
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how to get started:
+
+### 🛠️ **Development Setup**
+
+\`\`\`bash
+# Fork and clone the repository
+git clone https://github.com/your-username/ai-phone-agent.git
+cd ai-phone-agent
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Run tests
+npm test
+\`\`\`
+
+### 📝 **Contribution Guidelines**
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+## 📄 License
 
 This project is proprietary software. All rights reserved.
+
+---
+
+<div align="center">
+
+**Ready to revolutionize your business phone system?**
+
+[🚀 Get Started Now](#-quick-start) • [📖 Read the Docs](#-api-documentation) • [💬 Join Community](https://github.com/your-org/ai-phone-agent/discussions)
+
+*Built with ❤️ for small businesses who deserve enterprise-grade phone systems*
+
+</div>
