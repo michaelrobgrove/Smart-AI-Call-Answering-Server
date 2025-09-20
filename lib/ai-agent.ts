@@ -1,5 +1,5 @@
 import { notificationManager } from "./notification-manager"
-import { db } from "./db" // Declare the db variable
+import db from "./db"
 
 export interface ConversationContext {
   callId: string

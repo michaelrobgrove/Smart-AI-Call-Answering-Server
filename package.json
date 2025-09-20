@@ -3,10 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "dev": "npm run verify && next dev",
     "build": "next build",
-    "dev": "next dev",
+    "start": "next start",
     "lint": "next lint",
-    "start": "next start"
+    "setup": "node scripts/setup.js",
+    "reset": "node scripts/reset.js",
+    "verify": "node scripts/verify-setup.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -39,8 +42,8 @@
     "@radix-ui/react-tooltip": "1.1.6",
     "@vercel/analytics": "latest",
     "autoprefixer": "^10.4.20",
-    "bcryptjs": "latest",
-    "better-sqlite3": "latest",
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^8.7.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
@@ -50,7 +53,7 @@
     "fs": "latest",
     "geist": "latest",
     "input-otp": "1.4.1",
-    "jsonwebtoken": "latest",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.454.0",
     "next": "15.2.4",
     "next-themes": "latest",
@@ -70,6 +73,9 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.9",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",

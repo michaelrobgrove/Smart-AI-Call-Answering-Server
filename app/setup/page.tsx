@@ -27,6 +27,7 @@ interface SetupData {
 
   // AI Configuration
   systemPrompt: string
+  aiProvider: string
   aiModel: string
   maxTokens: number
   temperature: number
@@ -34,7 +35,7 @@ interface SetupData {
   // API Keys
   telnyxApiKey: string
   telnyxWebhookSecret: string
-  openaiApiKey: string
+  geminiApiKey: string // Used for both Gemini and OpenAI for simplicity
 
   // Features
   enableSpamDetection: boolean
@@ -83,14 +84,15 @@ Company Information:
 - Description: {COMPANY_DESCRIPTION}
 - Business Hours: {BUSINESS_HOURS}
 - Contact: {CONTACT_PHONE} / {CONTACT_EMAIL}`,
-    aiModel: "gpt-4",
+    aiProvider: "gemini",
+    aiModel: "gemini-1.5-pro",
     maxTokens: 500,
     temperature: 0.7,
 
     // API Keys
     telnyxApiKey: "",
     telnyxWebhookSecret: "",
-    openaiApiKey: "",
+    geminiApiKey: "", // Used for both providers
 
     // Features
     enableSpamDetection: true,
@@ -116,8 +118,8 @@ Company Information:
         const data = await response.json()
 
         if (data.isSetup) {
-          // Redirect to login if setup is complete
-          window.location.href = "/login"
+          // Redirect to home if setup is complete
+          window.location.href = "/"
         }
       } catch (error) {
         console.error("Failed to check setup status:", error)
@@ -148,7 +150,7 @@ Company Information:
       case 2: // AI
         return !!(setupData.systemPrompt && setupData.aiModel)
       case 3: // Integrations
-        return !!(setupData.telnyxApiKey && setupData.openaiApiKey)
+        return !!(setupData.telnyxApiKey && setupData.geminiApiKey)
       case 4: // Features
         return true // All optional
       case 5: // Review
@@ -193,10 +195,10 @@ Company Information:
 
       setSuccess(true)
 
-      // Redirect to login after successful setup
+      // Redirect to home page after 3 seconds, not login
       setTimeout(() => {
-        window.location.href = "/login"
-      }, 2000)
+        window.location.href = "/"
+      }, 3000)
     } catch (error) {
       setError(error instanceof Error ? error.message : "Setup failed")
     } finally {
@@ -216,7 +218,16 @@ Company Information:
             </div>
             <h2 className="text-xl font-semibold mb-2">Setup Complete!</h2>
             <p className="text-muted-foreground mb-4">Your AI Phone Agent system has been configured successfully.</p>
-            <p className="text-sm text-muted-foreground">Redirecting to login page...</p>
+            <div className="space-y-2 mb-4 text-left">
+              <p className="text-sm">
+                <strong>Admin Login:</strong>
+              </p>
+              <p className="text-sm font-mono bg-muted p-2 rounded">Username: admin</p>
+              <p className="text-sm font-mono bg-muted p-2 rounded">Password: admin123</p>
+            </div>
+            <Button onClick={() => (window.location.href = "/")} className="w-full">
+              Go to Dashboard
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -387,18 +398,50 @@ Company Information:
                       automatically.
                     </p>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                      <Label htmlFor="aiModel">AI Model</Label>
+                      <Label htmlFor="aiProvider">AI Provider *</Label>
+                      <select
+                        id="aiProvider"
+                        value={setupData.aiProvider}
+                        onChange={(e) => {
+                          handleInputChange("aiProvider", e.target.value)
+                          if (e.target.value === "gemini") {
+                            handleInputChange("aiModel", "gemini-1.5-pro")
+                          } else if (e.target.value === "openai") {
+                            handleInputChange("aiModel", "gpt-4")
+                          }
+                        }}
+                        className="w-full p-2 border rounded-md bg-white dark:bg-gray-800"
+                      >
+                        <option value="gemini">Google Gemini (Recommended)</option>
+                        <option value="openai">OpenAI GPT</option>
+                      </select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Gemini offers better pricing and performance
+                      </p>
+                    </div>
+                    <div>
+                      <Label htmlFor="aiModel">AI Model *</Label>
                       <select
                         id="aiModel"
                         value={setupData.aiModel}
                         onChange={(e) => handleInputChange("aiModel", e.target.value)}
-                        className="w-full p-2 border rounded-md"
+                        className="w-full p-2 border rounded-md bg-white dark:bg-gray-800"
                       >
-                        <option value="gpt-4">GPT-4 (Recommended)</option>
-                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                        {setupData.aiProvider === "gemini" ? (
+                          <>
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro (Recommended)</option>
+                            <option value="gemini-1.5-flash">Gemini 1.5 Flash (Faster)</option>
+                            <option value="gemini-1.0-pro">Gemini 1.0 Pro</option>
+                          </>
+                        ) : (
+                          <>
+                            <option value="gpt-4">GPT-4 (Recommended)</option>
+                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Cheaper)</option>
+                            <option value="gpt-4-turbo">GPT-4 Turbo (Latest)</option>
+                          </>
+                        )}
                       </select>
                     </div>
                     <div>
@@ -411,6 +454,7 @@ Company Information:
                         min="100"
                         max="2000"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Response length limit</p>
                     </div>
                     <div>
                       <Label htmlFor="temperature">Temperature</Label>
@@ -423,6 +467,7 @@ Company Information:
                         max="1"
                         step="0.1"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">Creativity (0.0-1.0)</p>
                     </div>
                   </div>
                 </div>
@@ -445,15 +490,23 @@ Company Information:
                       type="password"
                       value={setupData.telnyxApiKey}
                       onChange={(e) => handleInputChange("telnyxApiKey", e.target.value)}
-                      placeholder="KEY..."
+                      placeholder="KEY_your_telnyx_api_key_here"
                     />
                     <p className="text-sm text-muted-foreground mt-1">
-                      Get this from your Telnyx dashboard under API Keys
+                      Get this from your{" "}
+                      <a
+                        href="https://portal.telnyx.com/app/api-keys"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        Telnyx Portal → API Keys
+                      </a>
                     </p>
                   </div>
 
                   <div>
-                    <Label htmlFor="telnyxWebhookSecret">Telnyx Webhook Secret</Label>
+                    <Label htmlFor="telnyxWebhookSecret">Telnyx Webhook Secret (Optional)</Label>
                     <Input
                       id="telnyxWebhookSecret"
                       type="password"
@@ -461,20 +514,65 @@ Company Information:
                       onChange={(e) => handleInputChange("telnyxWebhookSecret", e.target.value)}
                       placeholder="Optional webhook signing secret"
                     />
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Recommended for security - set this in your Telnyx application
+                    </p>
                   </div>
 
-                  <div>
-                    <Label htmlFor="openaiApiKey">OpenAI API Key *</Label>
-                    <Input
-                      id="openaiApiKey"
-                      type="password"
-                      value={setupData.openaiApiKey}
-                      onChange={(e) => handleInputChange("openaiApiKey", e.target.value)}
-                      placeholder="sk-..."
-                    />
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Get this from your OpenAI dashboard under API Keys
-                    </p>
+                  {setupData.aiProvider === "gemini" ? (
+                    <div>
+                      <Label htmlFor="geminiApiKey">Google Gemini API Key *</Label>
+                      <Input
+                        id="geminiApiKey"
+                        type="password"
+                        value={setupData.geminiApiKey}
+                        onChange={(e) => handleInputChange("geminiApiKey", e.target.value)}
+                        placeholder="AIza..."
+                      />
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Get this from{" "}
+                        <a
+                          href="https://makersuite.google.com/app/apikey"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          Google AI Studio
+                        </a>{" "}
+                        - Free tier available!
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <Label htmlFor="openaiApiKey">OpenAI API Key *</Label>
+                      <Input
+                        id="openaiApiKey"
+                        type="password"
+                        value={setupData.geminiApiKey} // Note: using same field for simplicity
+                        onChange={(e) => handleInputChange("geminiApiKey", e.target.value)}
+                        placeholder="sk-..."
+                      />
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Get this from your{" "}
+                        <a
+                          href="https://platform.openai.com/api-keys"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          OpenAI Dashboard → API Keys
+                        </a>
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="bg-muted p-4 rounded-md">
+                    <h4 className="font-medium mb-2">💡 Getting Started Tips:</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• <strong>Gemini (Recommended):</strong> Free tier, fast responses, good for most use cases</li>
+                      <li>• <strong>OpenAI:</strong> More expensive but potentially better for complex conversations</li>
+                      <li>• <strong>Telnyx:</strong> You'll need to purchase a phone number (~$1/month) after setup</li>
+                    </ul>
                   </div>
                 </div>
               )}
@@ -548,7 +646,7 @@ Company Information:
                       <TabsTrigger value="features">Features</TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="admin" className="space-y-2">
+                    <TabsContent value="admin" className="space-y-2 pt-4">
                       <div>
                         <strong>Name:</strong> {setupData.adminName}
                       </div>
@@ -560,7 +658,7 @@ Company Information:
                       </div>
                     </TabsContent>
 
-                    <TabsContent value="company" className="space-y-2">
+                    <TabsContent value="company" className="space-y-2 pt-4">
                       <div>
                         <strong>Company:</strong> {setupData.companyName}
                       </div>
@@ -578,7 +676,10 @@ Company Information:
                       </div>
                     </TabsContent>
 
-                    <TabsContent value="ai" className="space-y-2">
+                    <TabsContent value="ai" className="space-y-2 pt-4">
+                      <div>
+                        <strong>Provider:</strong> <span className="capitalize">{setupData.aiProvider}</span>
+                      </div>
                       <div>
                         <strong>Model:</strong> {setupData.aiModel}
                       </div>
@@ -590,7 +691,7 @@ Company Information:
                       </div>
                     </TabsContent>
 
-                    <TabsContent value="keys" className="space-y-2">
+                    <TabsContent value="keys" className="space-y-2 pt-4">
                       <div>
                         <strong>Telnyx API Key:</strong> {setupData.telnyxApiKey ? "✓ Configured" : "❌ Missing"}
                       </div>
@@ -599,27 +700,24 @@ Company Information:
                         {setupData.telnyxWebhookSecret ? "✓ Configured" : "Not set"}
                       </div>
                       <div>
-                        <strong>OpenAI API Key:</strong> {setupData.openaiApiKey ? "✓ Configured" : "❌ Missing"}
+                        <strong>
+                          {setupData.aiProvider === "gemini" ? "Gemini API Key:" : "OpenAI API Key:"}
+                        </strong>{" "}
+                        {setupData.geminiApiKey ? "✓ Configured" : "❌ Missing"}
                       </div>
                     </TabsContent>
 
-                    <TabsContent value="features" className="space-y-2">
-                      <div className="flex items-center gap-2">
+                    <TabsContent value="features" className="space-y-2 pt-4">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Badge variant={setupData.enableSpamDetection ? "default" : "secondary"}>
                           Spam Detection: {setupData.enableSpamDetection ? "Enabled" : "Disabled"}
                         </Badge>
-                      </div>
-                      <div className="flex items-center gap-2">
                         <Badge variant={setupData.enableCallRecording ? "default" : "secondary"}>
                           Call Recording: {setupData.enableCallRecording ? "Enabled" : "Disabled"}
                         </Badge>
-                      </div>
-                      <div className="flex items-center gap-2">
                         <Badge variant={setupData.enableTranscription ? "default" : "secondary"}>
                           Transcription: {setupData.enableTranscription ? "Enabled" : "Disabled"}
                         </Badge>
-                      </div>
-                      <div className="flex items-center gap-2">
                         <Badge variant={setupData.enableNotifications ? "default" : "secondary"}>
                           Notifications: {setupData.enableNotifications ? "Enabled" : "Disabled"}
                         </Badge>

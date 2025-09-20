@@ -1,9 +1,8 @@
-import { DatabaseOperations } from "./database"
+// lib/db.ts
 
-// Create and export a singleton database instance
-export const db = new DatabaseOperations()
+import { getDatabase, DatabaseOperations } from "./database"
 
-// Export the DatabaseOperations class as well for type usage
-export { DatabaseOperations }
+// This is the corrected way to get the database instance
+const db: DatabaseOperations = getDatabase()
 
-export { db as default } from "./database"
+export default db

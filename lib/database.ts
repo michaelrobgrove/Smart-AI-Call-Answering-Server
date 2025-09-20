@@ -3,22 +3,28 @@ import { readFileSync, existsSync, mkdirSync } from "fs"
 import { join, dirname } from "path"
 
 // Database connection singleton
-let db: Database.Database | null = null
+let dbInstance: Database.Database | null = null
+let dbOperations: DatabaseOperations | null = null;
+
+
+// Use consistent database path from environment or default
+const dbPath = process.env.DATABASE_PATH || join(process.cwd(), "data", "database.db")
 
 export function getDatabase(): Database.Database {
-  if (!db) {
-    const dbPath = join(process.cwd(), "data", "ai-phone-agent.db")
+  if (!dbInstance) {
     const dbDir = dirname(dbPath)
 
     if (!existsSync(dbDir)) {
       mkdirSync(dbDir, { recursive: true })
     }
 
-    db = new Database(dbPath)
-    db.pragma("journal_mode = WAL")
-    db.pragma("foreign_keys = ON")
+    console.log(`Database path: ${dbPath}`) // Debug log
+
+    dbInstance = new Database(dbPath)
+    dbInstance.pragma("journal_mode = WAL")
+    dbInstance.pragma("foreign_keys = ON")
   }
-  return db
+  return dbInstance
 }
 
 // Check if database is initialized
@@ -28,6 +34,7 @@ export function isDatabaseInitialized(): boolean {
     const result = database.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='admin_users'").get()
     return !!result
   } catch (error) {
+    console.error("Database initialization check failed:", error)
     return false
   }
 }
@@ -36,21 +43,20 @@ export function isDatabaseInitialized(): boolean {
 export function initializeDatabase() {
   const database = getDatabase()
 
+  // Prevent re-initialization
+  if (isDatabaseInitialized()) {
+    console.log("Database is already initialized.")
+    return true
+  }
+
   try {
     const createTablesPath = join(process.cwd(), "scripts", "01-create-tables.sql")
-    const seedDataPath = join(process.cwd(), "scripts", "02-seed-data.sql")
-
-    if (!existsSync(createTablesPath) || !existsSync(seedDataPath)) {
-      console.warn("SQL initialization files not found. Please run 'npm run setup' to initialize the database.")
+    if (!existsSync(createTablesPath)) {
+      console.error("SQL schema file not found. Please ensure 'scripts/01-create-tables.sql' exists.")
       return false
     }
-
-    // Read and execute schema files
     const createTablesSQL = readFileSync(createTablesPath, "utf8")
-    const seedDataSQL = readFileSync(seedDataPath, "utf8")
-
     database.exec(createTablesSQL)
-    database.exec(seedDataSQL)
 
     console.log("Database initialized successfully")
     return true
@@ -78,7 +84,7 @@ export interface CallLog {
   call_id: string
   phone_number: string
   direction: "inbound" | "outbound"
-  status: "answered" | "missed" | "transferred" | "spam" | "voicemail"
+  status: "answered" | "missed" | "transferred" | "spam" | "voicemail" | "in-progress"
   duration: number
   transcript?: string
   summary?: string
@@ -112,6 +118,7 @@ export interface SystemSetting {
 
 export interface AdminUser {
   id: number
+  full_name: string;
   username: string
   password_hash: string
   email?: string
@@ -134,7 +141,7 @@ export class DatabaseOperations {
       INSERT INTO contacts (name, company, phone_number, email, is_spam)
       VALUES (?, ?, ?, ?, ?)
     `)
-    const result = stmt.run(contact.name, contact.company, contact.phone_number, contact.email, contact.is_spam)
+    const result = stmt.run(contact.name, contact.company, contact.phone_number, contact.email, contact.is_spam ? 1 : 0)
     return this.getContactById(result.lastInsertRowid as number)!
   }
 
@@ -148,21 +155,15 @@ export class DatabaseOperations {
     return stmt.get(phone) as Contact | null
   }
 
-  updateContact(id: number, updates: Partial<Contact>): void {
-    const fields = Object.keys(updates)
-      .filter((key) => key !== "id")
-      .map((key) => `${key} = ?`)
-    const values = Object.values(updates).filter((_, index) => Object.keys(updates)[index] !== "id")
+    updateContact(id: number, updates: Partial<Omit<Contact, 'id' | 'created_at' | 'updated_at'>>): void {
+    const fields = Object.keys(updates).map(key => `${key} = ?`).join(', ');
+    const values = Object.values(updates);
+    if (fields.length === 0) return;
 
-    if (fields.length === 0) return
-
-    const stmt = this.db.prepare(`
-      UPDATE contacts 
-      SET ${fields.join(", ")}, updated_at = CURRENT_TIMESTAMP 
-      WHERE id = ?
-    `)
-    stmt.run(...values, id)
+    const stmt = this.db.prepare(`UPDATE contacts SET ${fields}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`);
+    stmt.run(...values, id);
   }
+
 
   // Call log operations
   createCallLog(callLog: Omit<CallLog, "id" | "created_at">): CallLog {
@@ -183,11 +184,11 @@ export class DatabaseOperations {
       callLog.duration,
       callLog.transcript,
       callLog.summary,
-      callLog.lead_qualified,
+      callLog.lead_qualified ? 1: 0,
       callLog.caller_name,
       callLog.caller_company,
       callLog.reason_for_call,
-      callLog.transferred_to_human,
+      callLog.transferred_to_human ? 1 : 0,
       callLog.started_at,
       callLog.ended_at,
     )
@@ -195,58 +196,76 @@ export class DatabaseOperations {
     return this.getCallLogById(result.lastInsertRowid as number)!
   }
 
+    updateCallLog(id: number, updates: Partial<Omit<CallLog, 'id' | 'created_at' | 'call_id'>>): void {
+    const fields = Object.keys(updates).map(key => `${key} = ?`).join(', ');
+    const values = Object.values(updates);
+    if (fields.length === 0) return;
+
+    const stmt = this.db.prepare(`UPDATE call_logs SET ${fields} WHERE id = ?`);
+    stmt.run(...values, id);
+  }
+
   getCallLogById(id: number): CallLog | null {
     const stmt = this.db.prepare("SELECT * FROM call_logs WHERE id = ?")
     return stmt.get(id) as CallLog | null
   }
 
-  getCallLogsByContact(contactId: number): CallLog[] {
-    const stmt = this.db.prepare("SELECT * FROM call_logs WHERE contact_id = ? ORDER BY started_at DESC")
-    return stmt.all(contactId) as CallLog[]
+  getCallLogByTelnyxId(callId: string): CallLog | null {
+      const stmt = this.db.prepare("SELECT * FROM call_logs WHERE call_id = ?");
+      return stmt.get(callId) as CallLog | null;
   }
 
-  getRecentCallLogs(limit = 50): CallLog[] {
-    const stmt = this.db.prepare("SELECT * FROM call_logs ORDER BY started_at DESC LIMIT ?")
-    return stmt.all(limit) as CallLog[]
-  }
+
+  getCallLogs(filters: { status?: string, phone?: string, limit?: number }): CallLog[] {
+    let query = "SELECT * FROM call_logs";
+    const params: (string | number)[] = [];
+    const conditions: string[] = [];
+
+    if (filters.status && filters.status !== 'all') {
+        conditions.push("status = ?");
+        params.push(filters.status);
+    }
+    if (filters.phone) {
+        conditions.push("phone_number LIKE ?");
+        params.push(`%${filters.phone}%`);
+    }
+
+    if (conditions.length > 0) {
+        query += " WHERE " + conditions.join(" AND ");
+    }
+
+    query += " ORDER BY started_at DESC";
+
+    if (filters.limit) {
+        query += " LIMIT ?";
+        params.push(filters.limit);
+    }
+    
+    const stmt = this.db.prepare(query);
+    return stmt.all(...params) as CallLog[];
+}
+
 
   // Knowledge base operations
   getKnowledgeBase(): KnowledgeBase[] {
-    const stmt = this.db.prepare("SELECT * FROM knowledge_base WHERE is_active = 1 ORDER BY category, question")
+    const stmt = this.db.prepare("SELECT * FROM knowledge_base ORDER BY id DESC")
     return stmt.all() as KnowledgeBase[]
   }
 
-  createKnowledgeEntry(entry: Omit<KnowledgeBase, "id" | "created_at" | "updated_at">): KnowledgeBase {
+  getKnowledge(id: number) {
+    return this.db.prepare("SELECT * FROM knowledge_base WHERE id = ?").get(id)
+  }
+
+  addKnowledge(question: string, answer: string): KnowledgeBase {
     const stmt = this.db.prepare(`
-      INSERT INTO knowledge_base (category, question, answer, is_active)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO knowledge_base (question, answer, is_active, category)
+      VALUES (?, ?, 1, 'General')
     `)
-    const result = stmt.run(entry.category, entry.question, entry.answer, entry.is_active)
-    return this.getKnowledgeEntryById(result.lastInsertRowid as number)!
+    const result = stmt.run(question, answer)
+    return this.getKnowledge(result.lastInsertRowid as number)!
   }
 
-  getKnowledgeEntryById(id: number): KnowledgeBase | null {
-    const stmt = this.db.prepare("SELECT * FROM knowledge_base WHERE id = ?")
-    return stmt.get(id) as KnowledgeBase | null
-  }
-
-  updateKnowledgeEntry(id: number, updates: Partial<KnowledgeBase>): void {
-    const fields = Object.keys(updates)
-      .filter((key) => key !== "id")
-      .map((key) => `${key} = ?`)
-    const values = Object.values(updates).filter((_, index) => Object.keys(updates)[index] !== "id")
-
-    if (fields.length === 0) return
-
-    const stmt = this.db.prepare(`
-      UPDATE knowledge_base 
-      SET ${fields.join(", ")}, updated_at = CURRENT_TIMESTAMP 
-      WHERE id = ?
-    `)
-    stmt.run(...values, id)
-  }
-
-  deleteKnowledgeEntry(id: number): void {
+  deleteKnowledge(id: number): void {
     const stmt = this.db.prepare("DELETE FROM knowledge_base WHERE id = ?")
     stmt.run(id)
   }
@@ -260,8 +279,9 @@ export class DatabaseOperations {
 
   setSetting(key: string, value: string): void {
     const stmt = this.db.prepare(`
-      INSERT OR REPLACE INTO system_settings (setting_key, setting_value, updated_at)
-      VALUES (?, ?, CURRENT_TIMESTAMP)
+      INSERT INTO system_settings (setting_key, setting_value)
+      VALUES (?, ?)
+      ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value, updated_at = CURRENT_TIMESTAMP
     `)
     stmt.run(key, value)
   }
@@ -272,6 +292,13 @@ export class DatabaseOperations {
   }
 
   // Admin user operations
+  createAdminUser(user: Omit<AdminUser, 'id' | 'is_active' | 'last_login' | 'created_at'>) {
+    const stmt = this.db.prepare(
+      "INSERT INTO admin_users (full_name, username, password_hash, email) VALUES (?, ?, ?, ?)"
+    );
+    return stmt.run(user.full_name, user.username, user.password_hash, user.email);
+  }
+
   getAdminUser(username: string): AdminUser | null {
     const stmt = this.db.prepare("SELECT * FROM admin_users WHERE username = ? AND is_active = 1")
     return stmt.get(username) as AdminUser | null
@@ -281,4 +308,11 @@ export class DatabaseOperations {
     const stmt = this.db.prepare("UPDATE admin_users SET last_login = CURRENT_TIMESTAMP WHERE id = ?")
     stmt.run(userId)
   }
+}
+
+export function getDbOperations(): DatabaseOperations {
+  if (!dbOperations) {
+    dbOperations = new DatabaseOperations();
+  }
+  return dbOperations;
 }

@@ -8,12 +8,20 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_PATH=/app/data/database.db
+      - JWT_SECRET=${JWT_SECRET:-}
+      - TELNYX_API_KEY=${TELNYX_API_KEY:-}
+      - TELNYX_WEBHOOK_SECRET=${TELNYX_WEBHOOK_SECRET:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - AI_PROVIDER=${AI_PROVIDER:-gemini}
+      - SETUP_COMPLETED=${SETUP_COMPLETED:-false}
     volumes:
       - ./data:/app/data
-      - ./.env:/app/.env
+      - ./.env:/app/.env:ro
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
